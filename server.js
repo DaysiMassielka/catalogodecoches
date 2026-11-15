@@ -5,7 +5,7 @@ const path = require('node:path');
 const { modelos, listarPiezas } = require('./catalogo.js');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
