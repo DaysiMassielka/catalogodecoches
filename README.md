@@ -1,8 +1,8 @@
-# MotoParts Pro
+# AutoParts Pro
 
-Prototipo de un catálogo interactivo de repuestos de moto. Elige el modelo y el sistema, selecciona una pieza desde el esquema o la lista y pulsa **+ Cotizar** para guardar la cotización.
+Prototipo de un catálogo interactivo de repuestos de coches. Elige el modelo y el sistema, selecciona una pieza desde el esquema o la lista y pulsa **+ Cotizar** para guardar la cotización.
 
-Incluye Yamaha YZF-R1 (2024), Honda CBR 1000RR y Kawasaki Ninja ZX-10R, con piezas de motor, frenos ABS, suspensión delantera y transmisión. Los esquemas, las piezas y los precios son de demostración. Verifica la compatibilidad antes de usar el catálogo para una compra.
+Incluye Citroën C3, Dacia Sandero y Renault Clio, con piezas de motor, frenos ABS, suspensión delantera y transmisión. Las fichas de los coches, las especificaciones de los repuestos y los precios en euros son de ejemplo. Verifica la compatibilidad antes de usar el catálogo para una compra.
 
 ## Ejecutar en local
 
