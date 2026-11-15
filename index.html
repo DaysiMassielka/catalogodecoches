@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoParts Pro - Catálogo Interactivo de Despiece</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accentOrange: '#ff6b00',
+                        accentBlue: '#0ea5e9'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Fondo con imagen de moto y capa oscura translúcida */
+        body {
+            background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.90), rgba(15, 23, 42, 0.95)),
+                url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        [data-part].selected-part {
+            border-color: #ff6b00;
+            background-color: rgba(255, 107, 0, 0.12);
+        }
+
+        [data-pin][aria-pressed="true"] {
+            outline: 3px solid white;
+            outline-offset: 2px;
+        }
+
+        [data-system][aria-pressed="true"] {
+            background-color: rgba(255, 107, 0, 0.2);
+            color: #ff6b00;
+        }
+
+        #diagram[hidden] {
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body class="text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header / Barra Superior -->
+    <header
+        class="bg-cardBg/80 backdrop-blur-md border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl font-bold tracking-wider text-accentOrange">MOTO<span
+                    class="text-white">PARTS</span></span>
+            <span
+                class="text-xs bg-accentOrange/20 text-accentOrange px-2 py-1 rounded-full font-semibold border border-accentOrange/30">Prototipo
+                48h</span>
+        </div>
+        <div class="flex-1 max-w-md mx-6">
+            <input type="text" placeholder="Buscar por referencia, SKU o nombre de pieza..."
+                class="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accentOrange transition">
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="quote-summary" type="button"
+                class="relative bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg border border-slate-700 flex items-center space-x-2 transition">
+                <span>🛒 Cotización</span>
+                <span id="cart-count"
+                    class="bg-accentOrange text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenido Principal en 3 Columnas -->
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto w-full">
+
+        <!-- Columna Izquierda: Menú y Filtros (3 Columnas en LG) -->
+        <aside
+            class="lg:col-span-3 bg-cardBg/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 flex flex-col space-y-6 shadow-xl">
+            <div>
+                <h2 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Selección de Modelo</h2>
+                <select id="selectModelo"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-accentOrange">
+                    <option>Yamaha YZF-R1 (2024)</option>
+                    <option>Honda CBR 1000RR</option>
+                    <option>Kawasaki Ninja ZX-10R</option>
+                </select>
+            </div>
+
+            <div>
+                <h2 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Sistemas del Motor y Chasis
+                </h2>
+                <div class="space-y-2">
+                    <button type="button" data-system="motor" aria-pressed="true"
+                        class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 text-sm transition">Conjunto de Motor / Cilindro</button>
+                    <button type="button" data-system="frenos" aria-pressed="false"
+                        class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 text-sm transition">Sistema de Frenos ABS</button>
+                    <button type="button" data-system="suspension" aria-pressed="false"
+                        class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 text-sm transition">Suspensión Delantera</button>
+                    <button type="button" data-system="transmision" aria-pressed="false"
+                        class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 text-sm transition">Transmisión / Cadena</button>
+                </div>
+            </div>
+
+            <div class="mt-auto bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                <p class="text-xs text-slate-400">💡 <strong class="text-slate-200">Consejo:</strong> Haz clic en los
+                    pines numerados del diagrama central o sobre los elementos de la tabla para sincronizarlos
+                    automáticamente.</p>
+            </div>
+        </aside>
+
+        <!-- Columna Central: Visualizador de Despiece (6 Columnas en LG) -->
+        <section
+            class="lg:col-span-6 bg-cardBg/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 flex flex-col relative shadow-xl overflow-hidden min-h-[500px]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="diagram-title" class="font-bold text-sm tracking-wide text-slate-200">Esquema de piezas</h2>
+                <div class="space-x-2">
+                    <button class="bg-slate-800 hover:bg-slate-700 px-3 py-1 text-xs rounded border border-slate-700">🔍
+                        Zoom +</button>
+                    <button class="bg-slate-800 hover:bg-slate-700 px-3 py-1 text-xs rounded border border-slate-700">🔍
+                        Zoom -</button>
+                </div>
+            </div>
+
+            <!-- Contenedor del Diagrama Simulado (Estilo Esquema Técnico) -->
+            <div id="diagram"
+                class="flex-1 bg-slate-950/60 rounded-xl border border-slate-800 relative flex items-center justify-center p-4 overflow-hidden">
+                <!-- Simulación de esquema de motor central -->
+                <div class="relative w-full max-w-72 aspect-square">
+                    <svg viewBox="0 0 120 120" class="w-full h-full text-slate-500" fill="none"
+                        stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M52 10h16l3 12 9 4 11-6 11 11-6 11 4 9 12 3v16l-12 3-4 9 6 11-11 11-11-6-9 4-3 12H52l-3-12-9-4-11 6-11-11 6-11-4-9-12-3V54l12-3 4-9-6-11 11-11 11 6 9-4z"/>
+                        <circle cx="60" cy="62" r="29"/>
+                        <circle cx="60" cy="62" r="12"/>
+                    </svg>
+                    <div id="diagram-pins" class="absolute inset-0"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Columna Derecha: Lista de Componentes y Detalle (3 Columnas en LG) -->
+        <aside
+            class="lg:col-span-3 bg-cardBg/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 flex flex-col shadow-xl">
+            <h2 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Componentes del Sistema</h2>
+
+            <p id="parts-status" role="status" class="text-xs text-slate-400"></p>
+            <div id="parts-list" class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[500px]"></div>
+            <template id="part-template">
+                <div tabindex="0"
+                    class="bg-slate-900/60 border border-slate-800 hover:border-accentOrange/60 p-3 rounded-xl cursor-pointer transition">
+                    <span data-ref class="bg-accentOrange text-white text-xs px-2 py-0.5 rounded font-bold"></span>
+                    <p data-name class="mt-1 text-sm font-semibold text-slate-200"></p>
+                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
+                        <span data-price class="text-sm font-bold text-accentOrange"></span>
+                        <button type="button"
+                            class="bg-slate-800 hover:bg-accentOrange text-xs px-2.5 py-1 rounded transition">+ Cotizar</button>
+                    </div>
+                </div>
+            </template>
+        </aside>
+
+    </main>
+
+    <script>
+        const selectModelo = document.getElementById('selectModelo');
+        const lista = document.getElementById('parts-list');
+        const plantilla = document.getElementById('part-template');
+        const estado = document.getElementById('parts-status');
+        const diagrama = document.getElementById('diagram');
+        const titulo = document.getElementById('diagram-title');
+        const pines = document.getElementById('diagram-pins');
+        const posicionesPines = [
+            ['27%', '25%'],
+            ['69%', '42%'],
+            ['39%', '72%']
+        ];
+        const sistemas = document.querySelectorAll('[data-system]');
+        const apiBase = location.protocol === 'file:' ? 'http://localhost:3000' : '';
+        const urlCotizaciones = apiBase + '/api/cotizaciones';
+        let sistemaActivo = sistemas[0];
+        let cargaActual;
+        let cartCount = 0;
+
+        function selectPart(referencia, mostrarFila = false) {
+            for (const fila of lista.children) {
+                const seleccionada = fila.dataset.part === referencia;
+                fila.classList.toggle('selected-part', seleccionada);
+                if (seleccionada && mostrarFila) {
+                    fila.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+
+            for (const pin of pines.children) {
+                pin.setAttribute('aria-pressed', String(pin.dataset.pin === referencia));
+            }
+        }
+
+        async function addToCart(pieza, precio, modelo_moto) {
+            try {
+                const respuesta = await fetch(urlCotizaciones, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pieza, precio, modelo_moto })
+                });
+                if (!respuesta.ok) {
+                    alert('Hubo un error al guardar en la base de datos.');
+                    return;
+                }
+
+                const resultado = await respuesta.json();
+                document.getElementById('cart-count').textContent = ++cartCount;
+                alert('¡Guardado con éxito!\n• Pieza: ' + pieza + '\n• ID de cotización: ' + resultado.id_cotizacion);
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                alert('No se pudo conectar con el servidor. Ejecuta "npm start" y abre http://localhost:3000.');
+            }
+        }
+
+        function mostrarPiezas(piezas) {
+            piezas.forEach(({ id, pieza, precio }, index) => {
+                const referencia = String(index + 1);
+                const fila = plantilla.content.firstElementChild.cloneNode(true);
+                fila.dataset.part = id;
+                fila.querySelector('[data-ref]').textContent = 'Ref. ' + referencia;
+                fila.querySelector('[data-name]').textContent = pieza;
+                fila.querySelector('[data-price]').textContent = '$' + precio.toFixed(2);
+                const cotizar = fila.querySelector('button');
+                cotizar.dataset.quoteName = pieza;
+                cotizar.dataset.quotePrice = precio;
+                lista.append(fila);
+
+                const posicion = posicionesPines[index];
+                if (posicion) {
+                    const pin = document.createElement('button');
+                    pin.type = 'button';
+                    pin.dataset.pin = id;
+                    pin.className = 'absolute w-8 h-8 rounded-full bg-accentOrange text-white font-bold text-xs shadow-lg';
+                    pin.textContent = referencia;
+                    pin.style.left = posicion[0];
+                    pin.style.top = posicion[1];
+                    pin.setAttribute('aria-pressed', 'false');
+                    pin.setAttribute('aria-label', 'Seleccionar ' + pieza);
+                    pin.addEventListener('click', () => selectPart(id, true));
+                    pines.append(pin);
+                }
+            });
+        }
+
+        async function actualizarSistema(sistema) {
+            cargaActual?.abort();
+            const carga = new AbortController();
+            cargaActual = carga;
+            sistemaActivo = sistema;
+            for (const boton of sistemas) {
+                boton.setAttribute('aria-pressed', String(boton === sistema));
+            }
+
+            const filtros = new URLSearchParams({
+                modelo: selectModelo.value,
+                sistema: sistema.dataset.system
+            });
+            lista.replaceChildren();
+            pines.replaceChildren();
+            diagrama.hidden = true;
+            titulo.textContent = sistema.textContent.trim() + ' · Esquema de demostración';
+            estado.textContent = 'Cargando piezas…';
+
+            try {
+                const respuesta = await fetch(apiBase + '/api/piezas?' + filtros, { signal: carga.signal });
+                if (!respuesta.ok) throw new Error('Error al obtener las piezas');
+                const piezas = await respuesta.json();
+                if (carga.signal.aborted) return;
+
+                mostrarPiezas(piezas);
+                diagrama.hidden = piezas.length === 0;
+                estado.textContent = piezas.length
+                    ? 'Piezas y precios de ejemplo. Compatibilidad por verificar.'
+                    : 'No hay piezas registradas para este modelo y sistema.';
+            } catch (error) {
+                if (carga.signal.aborted) return;
+                console.error('No se pudieron cargar las piezas:', error);
+                estado.textContent = document.body.dataset.hosting === 'netlify'
+                    ? 'No se pudo cargar el catálogo. Vuelve a intentarlo en unos minutos.'
+                    : 'No se pudo cargar el catálogo. Ejecuta npm start y vuelve a abrir la página.';
+            }
+        }
+
+        lista.addEventListener('click', event => {
+            const cotizar = event.target.closest('[data-quote-name]');
+            if (cotizar) {
+                addToCart(cotizar.dataset.quoteName, Number(cotizar.dataset.quotePrice), selectModelo.value);
+                return;
+            }
+
+            const fila = event.target.closest('[data-part]');
+            if (fila) selectPart(fila.dataset.part);
+        });
+
+        lista.addEventListener('keydown', event => {
+            if (event.target.matches('[data-part]') && ['Enter', ' '].includes(event.key)) {
+                event.preventDefault();
+                selectPart(event.target.dataset.part);
+            }
+        });
+
+        for (const sistema of sistemas) {
+            sistema.addEventListener('click', () => actualizarSistema(sistema));
+        }
+
+        selectModelo.addEventListener('change', () => actualizarSistema(sistemaActivo));
+        actualizarSistema(sistemaActivo);
+        document.getElementById('quote-summary').addEventListener('click', () => {
+            if (document.body.dataset.hosting === 'netlify') {
+                alert('Has guardado ' + cartCount + ' cotización(es) en esta sesión.');
+                return;
+            }
+            const url = new URL(urlCotizaciones, apiBase || location.origin);
+            alert('Tienes ' + cartCount + ' pieza(s) en tu lista actual. Revisa ' + url.href +
+                ' para ver los registros guardados.');
+        });
+    </script>
+</body>
+
+</html>
