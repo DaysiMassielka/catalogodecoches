@@ -6,6 +6,7 @@ const { modelos, listarPiezas } = require('./catalogo.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.RENDER === 'true' ? '0.0.0.0' : 'localhost';
 
 // Middlewares
 app.use(cors());
@@ -35,7 +36,7 @@ db.run(`CREATE TABLE IF NOT EXISTS cotizaciones (
         return;
     }
 
-    app.listen(PORT, 'localhost', (listenError) => {
+    app.listen(PORT, HOST, (listenError) => {
         if (listenError) {
             console.error('No se pudo iniciar el servidor:', listenError.message);
             process.exitCode = 1;
@@ -43,7 +44,7 @@ db.run(`CREATE TABLE IF NOT EXISTS cotizaciones (
             return;
         }
 
-        console.log(`Servidor corriendo en http://localhost:${PORT}`);
+        console.log(`Servidor corriendo en http://${HOST}:${PORT}`);
     });
 });
 
